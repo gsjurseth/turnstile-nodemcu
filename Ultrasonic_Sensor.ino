@@ -1,32 +1,33 @@
 #include <ESP8266WiFi.h>
+#include <stdio.h>
+#define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+
 #include <FastLED.h>
 #include <ESP8266HTTPClient.h>
 // defines pins numbers
 const int trigPin = 14;  //D5
 const int echoPin = 12;  //D6
 
-#define LED_PIN    2
-#define LED_COUNT 60
+#define LED_PIN    4
+#define NUM_LEDS 60
 #define COLOR_ORDER GRB
 
 
 // Replace these with your WiFi network settings
-const char* ssid = "GoogleGuest-Legacy"; //replace this with your WiFi network name
-const char* password = ""; //replace this with your WiFi network password
+const char* ssid = "swetx2.4"; //replace this with your WiFi network name
+const char* password = "*****"; //replace this with your WiFi network password
 
 // defines variables
 long duration;
 int distance;
 
-CRGB leds[LED_COUNT];
+CRGB leds[NUM_LEDS];
 
 int brightness = 5; // Initial brightness
 
 void setup() {
   Serial.println("About to try this shit out");
 
-  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, LED_COUNT);
-  FastLED.setBrightness(brightness);
   
   /*
   strip.begin();
@@ -49,46 +50,90 @@ void setup() {
   Serial.println("success!");
   Serial.print("IP Address is: ");
   Serial.println(WiFi.localIP());
-}
 
-void ledWhite() {
-  leds[0] = CRGB::White; FastLED.show(); delay(30);
-  leds[0] = CRGB::Black; FastLED.show(); delay(30);
-  FastLED.show();
   
-}
-
-void ledGreen() {
-  leds[0] = CRGB::Green; FastLED.show(); delay(30);
-  leds[0] = CRGB::Black; FastLED.show(); delay(30);
-  FastLED.show();
-  
+  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+  //FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, LED_COUNT);
+  FastLED.setBrightness(brightness);
+  ledBlue();
 }
 
 void ledRed() {
-  for (int i=0;i++;i<60) {
-    leds[i] = CRGB::Red;
+  Serial.println("should do the red thing now");
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Red; FastLED.show(); delay(5);
     FastLED.show();
-    delay(10);
+  }
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Black; FastLED.show(); delay(5);
+    FastLED.show();
   }
 }
 
+void solidGreen() {
+  Serial.println("solid green");
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Green; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+}
+
+
+void ledGreen() {
+  Serial.println("should do the green thing now");
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Green; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Black; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+}
+
+
 void ledYellow() {
-  leds[0] = CRGB::Yellow; FastLED.show(); delay(30);
-  leds[0] = CRGB::Black; FastLED.show(); delay(30);
-  FastLED.show();
-  
+  Serial.println("should do the yellow thing now");
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Yellow; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Black; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+}
+
+void ledBlue() {
+  Serial.println("should do the blue thing now");
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Blue; FastLED.show(); delay(5);
+    FastLED.show();
+  }
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB::Black; FastLED.show(); delay(5);
+    FastLED.show();
+  }
 }
 
 
 void loop() {
 
+  solidGreen();
   // Clears the trigPin
   Serial.println("About to try measure distance");
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
-  ledRed();
   // Sets the trigPin on HIGH state for 10 micro seconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
@@ -112,31 +157,19 @@ void loop() {
     http.begin("http://emea-poc15-test.apigee.net/demo/ip");
     int httpCode = http.GET();
 
-    if (httpCode > 0)
+    if (httpCode == 200)
     {
+      ledYellow();
       Serial.println("we done got a response and shit");
       /*
-        const size_t bufferSize = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(8) + 370;
-        DynamicJsonBuffer jsonBuffer(bufferSize);
-        JsonObject& root = jsonBuffer.parseObject(http.getString());
 
-        int id = root["id"];
-        const char* name = root["name"];
-        const char* username = root["username"];
-        const char* email = root["email"];
-
-        Serial.print("Name:");
-        Serial.println(name);
-        Serial.print("Username:");
-        Serial.println(username);
-        Serial.print("Email:");
-        Serial.println(email);
       */
+    }
+    else {
+      ledRed();
     }
     http.end(); //Close connection
   }
 
   delay(2000);
-  leds[0] = CRGB::Green;
-  FastLED.show();
 }
