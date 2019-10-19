@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
-#include <stdio.h>
 #define FASTLED_ESP8266_NODEMCU_PIN_ORDER
 
 #include <FastLED.h>
 #include <ESP8266HTTPClient.h>
+
 // defines pins numbers
 const int trigPin = 14;  //D5
 const int echoPin = 12;  //D6
@@ -14,25 +14,26 @@ const int echoPin = 12;  //D6
 
 
 // Replace these with your WiFi network settings
-const char* ssid = "swetx2.4"; //replace this with your WiFi network name
-const char* password = "*****"; //replace this with your WiFi network password
+const char* ssid = "swetx"; //replace this with your WiFi network name
+const char* password = "***"; //replace this with your WiFi network password
 
 // defines variables
 long duration;
 int distance;
+String ledColor = "";
+
 
 CRGB leds[NUM_LEDS];
 
-int brightness = 5; // Initial brightness
+int brightness = 1; // Initial brightness
+unsigned long startMillis;
+unsigned long currentMillis;
+const unsigned long period = 1000;
 
 void setup() {
   Serial.println("About to try this shit out");
 
-  
-  /*
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
-  */
+  startMillis = millis();
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   Serial.begin(115200); // Starts the serial communication
@@ -58,79 +59,91 @@ void setup() {
   ledBlue();
 }
 
-void ledRed() {
-  Serial.println("should do the red thing now");
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Red; FastLED.show(); delay(5);
-    FastLED.show();
-  }
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Black; FastLED.show(); delay(5);
-    FastLED.show();
-  }
+void ledStrip() {
+  
 }
 
 void solidGreen() {
-  Serial.println("solid green");
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Green; FastLED.show(); delay(5);
-    FastLED.show();
+  if ( ledColor != "green" ) {
+    Serial.println("solid green");
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Green; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+  ledColor = "green";    
   }
 }
 
+void ledRed() {
+  if ( ledColor != "redThing" ) {
+    Serial.println("should do the red thing now");
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Red; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+    ledColor = "redThing";
+  }
+}
 
 void ledGreen() {
-  Serial.println("should do the green thing now");
+  if ( ledColor != "greenThing" ) {
+    Serial.println("should do the green thing now");
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Green; FastLED.show(); delay(5);
-    FastLED.show();
-  }
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Green; FastLED.show(); delay(1);
+      FastLED.show();
+    }
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Black; FastLED.show(); delay(5);
-    FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+    ledColor = "greenThing";
   }
 }
 
 
 void ledYellow() {
-  Serial.println("should do the yellow thing now");
+  if ( ledColor != "yellowThing" ) {
+    Serial.println("should do the yellow thing now");
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Yellow; FastLED.show(); delay(1);
+      FastLED.show();
+    }
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Yellow; FastLED.show(); delay(5);
-    FastLED.show();
-  }
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Black; FastLED.show(); delay(5);
-    FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+    ledColor = "yellowThing";
   }
 }
 
 void ledBlue() {
-  Serial.println("should do the blue thing now");
+  if ( ledColor != "blueThing" ) {
+    Serial.println("should do the blue thing now");
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Blue; FastLED.show(); delay(5);
-    FastLED.show();
-  }
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Blue; FastLED.show(); delay(1);
+      FastLED.show();
+    }
 
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB::Black; FastLED.show(); delay(5);
-    FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB::Black; FastLED.show(); delay(1);
+      FastLED.show();
+    }
+    ledColor = "blueThing";
   }
 }
 
 
-void loop() {
-
-  solidGreen();
-  // Clears the trigPin
-  Serial.println("About to try measure distance");
+int measureDistance() {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
@@ -141,8 +154,6 @@ void loop() {
 
   // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
-  Serial.print("Duration: ");
-  Serial.println(duration);
 
   // Calculating the distance
   distance = duration * 0.034 / 2;
@@ -150,26 +161,41 @@ void loop() {
   Serial.print("Distance: ");
   Serial.println(distance);
 
-  if ((WiFi.status() == WL_CONNECTED) && distance < 100)
-  {
-    ledYellow();
-    HTTPClient http; //Object of class HTTPClient
-    http.begin("http://emea-poc15-test.apigee.net/demo/ip");
-    int httpCode = http.GET();
+  return distance;
+}
 
-    if (httpCode == 200)
-    {
-      ledYellow();
-      Serial.println("we done got a response and shit");
-      /*
+int registerPassenger() {
+      HTTPClient http; //Object of class HTTPClient
+      http.begin("http://emea-poc15-test.apigee.net/demo/ip");
+      int httpCode = http.GET();
+      http.end(); //Close connection
+      return httpCode;  
+}
 
-      */
+void loop() {
+  int distance;
+
+  solidGreen();
+  // Clears the trigPin
+
+  distance = measureDistance();
+      
+  currentMillis = millis();  //get the current time
+
+  if (distance < 100) {
+    int newDistance = measureDistance();
+    if ( (newDistance < 100) && (currentMillis - startMillis >= period) ) {
+      startMillis = currentMillis;
+      int sc = registerPassenger();
+      if (sc == 200)
+      {
+        ledYellow();
+        Serial.println("we done got a response and shit");
+      }
+      else {
+        ledRed();
+      }
     }
-    else {
-      ledRed();
-    }
-    http.end(); //Close connection
   }
-
-  delay(2000);
+  delay(50);
 }
