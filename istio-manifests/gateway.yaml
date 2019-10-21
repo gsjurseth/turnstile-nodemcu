@@ -1,0 +1,44 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: default
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gw-vsvc
+  namespace: app
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - default/gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/turnstiles"
+    route:
+    - destination:
+        host: turnstileservice
+        port:
+          number: 3000
+  - match:
+    - uri:
+        prefix: "/visitors"
+    route:
+    - destination:
+        host: visitorservice
+        port:
+          number: 3000
