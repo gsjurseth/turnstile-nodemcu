@@ -3,6 +3,7 @@
 
 #include <FastLED.h>
 #include <ESP8266HTTPClient.h>
+#include <ArduinoJson.h>
 
 // defines pins numbers
 const int trigPin = 14;  //D5
@@ -11,18 +12,20 @@ const int echoPin = 12;  //D6
 #define LED_PIN    4
 #define NUM_LEDS 60
 #define COLOR_ORDER GRB
-#define ACTIVATE_DISTANCE 50
+//#define ACTIVATE_DISTANCE 50
 
 
 // Replace these with your WiFi network settings
-const char* ssid = "<yourssid"; //replace this with your WiFi network name
-const char* password = "<yourpass>"; //replace this with your WiFi network password
+const char* ssid = "<your_ssid>"; //replace this with your WiFi network name
+const char* password = "<your_pass>"; //replace this with your WiFi network password
 
 // defines variables
 long duration;
 int distance;
+int ACTIVATE_DISTANCE;
 String ledColor = "";
-
+String turnstileName = "NordicAPIsDemo";
+String apikey = "wV0IzJjIr5Dl5FgjLc1McT6HdHdgJzZn";
 
 CRGB leds[NUM_LEDS];
 
@@ -49,7 +52,7 @@ void setup() {
   FastLED.setBrightness(brightness);
 
   ledBlack();
-  RGBLoop();
+  //RGBLoop();
   Serial.println();
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED) {
@@ -71,7 +74,8 @@ void setup() {
   delay(100);
   rainbowWithGlitter();
   delay(1000);
-  
+
+  ACTIVATE_DISTANCE = fetchConfig();
 }
 
 void Sparkle(byte red, byte green, byte blue, int SpeedDelay) {
@@ -333,17 +337,58 @@ int measureDistance() {
   return distance;
 }
 
-int registerPassenger() {
+int registerPassenger(int distance) {
       HTTPClient http; //Object of class HTTPClient
+      String url = String("http://emea-poc15-test.apigee.net/v1/visitors?apikey=" + apikey + "&name=NordicDemoStile&distance=" + distance);
       http.begin("http://emea-poc15-test.apigee.net/demo/ip");
       int httpCode = http.GET();
       http.end(); //Close connection
       return httpCode;  
 }
 
+int fetchConfig() {
+  int daDistance;
+  StaticJsonDocument<200> doc;
+  HTTPClient http; //Object of class HTTPClient
+  String url = String("http://emea-poc15-test.apigee.net/v1/turnstiles/NordicDemoStile?apikey=" + apikey);
+  Serial.print("This is the url: ");
+  Serial.println(url);
+  http.begin(url);
+  int httpCode = http.GET();
+
+  if(httpCode == 200) {
+    String json = http.getString();
+    DeserializationError error = deserializeJson(doc, json);
+
+    // Test if parsing succeeds.
+    if (error) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      return 0;
+    }
+
+    daDistance = doc["distance"];
+    String name = doc["name"];
+
+    Serial.print("The name: ");
+    Serial.println(name);
+    Serial.print("The distance: ");
+    Serial.println(daDistance);
+  }
+       
+  http.end(); //Close connection
+  Serial.print("The distance again: ");
+  Serial.println(daDistance);
+
+  return daDistance;
+}
+
+
 void loop() {
   int distance;
 
+  Serial.print("activate distance is: ");
+  Serial.println(ACTIVATE_DISTANCE);
   solidGreen();
   // Clears the trigPin
 
@@ -355,7 +400,7 @@ void loop() {
     int newDistance = measureDistance();
     if ( (newDistance < ACTIVATE_DISTANCE) && (currentMillis - startMillis >= period) ) {
       startMillis = currentMillis;
-      int sc = registerPassenger();
+      int sc = registerPassenger(newDistance);
       if (sc == 200)
       {
         ledYellow();
